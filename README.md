@@ -1,4 +1,4 @@
-h1 align="center">
+<h1 align="center">
   <img alt="cgapp logo" src="https://raw.githubusercontent.com/create-go-app/cli/master/.github/images/cgapp_logo%402x.png" width="224px"/><br/>
   Food Delivery Backend
 </h1>
