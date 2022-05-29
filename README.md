@@ -73,13 +73,6 @@ The Food Delivery backend is free and open-source software licensed under the GN
 
 Cosmas Mbuvi | [https://crunchgarage.com](https://crunchgarage.com)
 
-
-<br />
-
----
-
-<br />
-
 # 💛
 
 Reminder that *you are great, you are enough, and your presence is valued.* If you are struggling with your mental health, please reach out to someone you love and consult a professional. [There are many resources for you to get help in a time of need.](https://www.nimh.nih.gov/health/find-help)
