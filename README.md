@@ -65,9 +65,8 @@ _**PS:** consider sharing and following our organization ([Crunch Garage](https:
 
 # ⚠️ License
 
-The Food Delivery backend is free and open-source software licensed under the GNU General Public License v3.0. All designs were created by [Crunch Garage](https://github.com/CossyCossy/food-delivery) and distributed under Creative Commons license (CC BY-SA 4.0 International).
+The Food Delivery backend is free and open-source software licensed under the GNU General Public License v3.0. All designs were created by [Crunch Garage](https://github.com/CossyCossy/food-delivery) and distributed under [MIT](./LICENSE).
 
-[MIT](./LICENSE)
 
 # Author
 
