@@ -2,7 +2,7 @@
   <img alt="cgapp logo" src="https://raw.githubusercontent.com/create-go-app/cli/master/.github/images/cgapp_logo%402x.png" width="224px"/><br/>
   Food Delivery Backend
 </h1>
-<p align="center">Create a new production-ready project with <b>backend</b> (Golang) and <b>database</b> (PostgreSQL) in a few minutes.</p>
+<p align="center">Create a new production-ready food delivery project just as Uber Eats and Glovo  with <b>backend</b> (Golang) and <b>database</b> (PostgreSQL) in a few minutes.</p>
 
 <p align="center"><a href="https://pkg.go.dev/github.com/create-go-app/cli/v3?tab=doc" 
 target="_blank"><img src="https://img.shields.io/badge/Go-1.18+-00ADD8?style=for-the-badge&logo=go" alt="go version" /></a>&nbsp;</p>
@@ -56,7 +56,7 @@ If you have a contribution in mind, please check out our [Contribution Guide](ht
 If you want to say thank you and/or support active development of the Food Delivery backend:
 
 - Add a GitHub Star to the project!
-- Check out our website[Crunch Garage](https://crunchgarage.com/) and [GitHub](https://github.com/Crunch-Garage)
+- Check out our website [Crunch Garage](https://crunchgarage.com/) and [GitHub](https://github.com/Crunch-Garage)
  
 
 Thanks so much for your interest in growing the reach of the Food Delivery backend!
@@ -70,7 +70,7 @@ The Food Delivery backend is free and open-source software licensed under the GN
 
 # Author
 
-Cosmas Mbuvi | [https://crunchgarage.com](https://crunchgarage.com)
+Cosmas Mbuvi | [Crunch Garage Homepage](https://crunchgarage.com)
 
 # 💛
 
