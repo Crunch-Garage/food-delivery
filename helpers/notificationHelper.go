@@ -76,6 +76,7 @@ func HandleSendEmail(to, subject, body string) (string, error) {
 	if err := d.DialAndSend(m); err != nil {
 		return "", err
 	}
+
 	msg := "Email sent successfully"
 	return msg, nil
 

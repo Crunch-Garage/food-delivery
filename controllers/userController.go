@@ -39,6 +39,7 @@ func VerifyPassword(userPassword, password string) (bool, string) {
 	return check, msg
 }
 
+/*sign up*/
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 
@@ -61,44 +62,40 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pro_type := ""
+
+	if user.User_type == "CLIENT" {
+		pro_type = ""
+	} else {
+		pro_type = "CHEF"
+	}
+
+	username_email_strip := strings.Split(user.Email, "@")[0]
+
 	user_ := models.User{
 		First_name: user.First_name,
 		Last_name:  user.Last_name,
 		User_type:  user.User_type,
 		Email:      user.Email,
 		Phone:      user.Phone,
-		User_name:  strings.Split(user.Email, "@")[0],
+		User_name:  username_email_strip,
 		Password:   HashPassword(user.Password),
+		Profile: []models.Profile{{
+			First_name: user.First_name,
+			Last_name:  user.Last_name,
+			User_type:  user.User_type,
+			User_name:  username_email_strip,
+			Pro_type:   pro_type,
+		}},
 	}
 
-	/*create the user on the user tabel*/
 	createdUser := database.DB.Create(&user_)
 	err = createdUser.Error
 
-	/*if there is an error abort*/
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
 		return
-	}
-
-	profile_ := &models.Profile{
-		UserID:     int(user_.ID),
-		First_name: user_.First_name,
-		Last_name:  user_.Last_name,
-		User_type:  user_.User_type,
-		User_name:  user_.User_name,
-		Pro_type:   "",
-	}
-
-	/*create user profile*/
-	createProfile := database.DB.Create(&profile_)
-	err = createProfile.Error
-
-	/*if there is an error abort*/
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
 	}
 
 	_, err := helper.RegisterEmailAccount(user)
@@ -109,9 +106,10 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	/*if successful return user profile*/
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(createProfile.Value)
+	json.NewEncoder(w).Encode(user_.Profile)
 }
 
+/*login*/
 func Login(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
@@ -159,6 +157,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(signings)
 }
 
+/*get user info from profile table*/
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	user_id, _ := strconv.Atoi(params["id"])
@@ -178,7 +177,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(profile)
-
 }
 
 // func UpdateUser(w http.ResponseWriter, r *http.Request) {
