@@ -29,7 +29,7 @@ func RegisterEmailAccount(user models.User) (string, error) {
 		Name    string
 		Message string
 	}{
-		Name:    user.First_name + " " + user.Last_name,
+		Name:    user.First_name,
 		Message: "Welcome to EatsFood. Please take a sec to confirm your email.",
 	}); err != nil {
 		return "", err
