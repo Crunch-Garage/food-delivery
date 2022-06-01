@@ -51,6 +51,7 @@ func CloseDB() error {
 func AutoMigrate() {
 	DB.AutoMigrate(
 		&models.User{},
+		&models.Profile{},
 		&models.Menu{},
 		&models.Restaurant{},
 		&models.Food{},

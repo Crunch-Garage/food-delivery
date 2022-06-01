@@ -11,10 +11,11 @@ import (
 var jwtkey = []byte(os.Getenv("JWT_KEY"))
 
 /*Genearte JWT token*/
-func GenerateToken(principal string, duration time.Duration) (string, int64, error) {
+func GenerateToken(principal models.User, duration time.Duration) (string, int64, error) {
 
 	claims := &models.Claims{
-		principal,
+		int(principal.ID),
+		principal.User_name,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
 		},

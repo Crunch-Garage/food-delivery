@@ -40,11 +40,24 @@ func VerifyPassword(userPassword, password string) (bool, string) {
 }
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
-
 	var user models.User
 
 	_ = json.NewDecoder(r.Body).Decode(&user)
 
+	_, err := helper.RegisterEmailAccount(user)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+}
+
+func SignUp2(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+
+	_ = json.NewDecoder(r.Body).Decode(&user)
+
+	/*check if email exists*/
 	var dbUser models.User
 	database.DB.Where("email = ?", user.Email).First(&dbUser)
 	if dbUser.ID != 0 {
@@ -53,6 +66,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	/*check if phone phone number exists*/
 	database.DB.Where("phone = ?", user.Phone).First(&dbUser)
 	if dbUser.ID != 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -61,24 +75,54 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user_ := models.User{
-		First_name:   user.First_name,
-		Last_name:    user.Last_name,
-		Password:     HashPassword(user.Password),
-		Email:        user.Email,
-		Avatar:       user.Avatar,
-		Phone:        user.Phone,
-		User_name:    strings.Split(user.Email, "@")[0], //split the email address at the @
-		Account_type: "PRO",                             //CLIENT or PRO
+		First_name: user.First_name,
+		Last_name:  user.Last_name,
+		User_type:  user.User_type,
+		Email:      user.Email,
+		Phone:      user.Phone,
+		User_name:  strings.Split(user.Email, "@")[0],
+		Password:   HashPassword(user.Password),
 	}
 
+	/*create the user on the user tabel*/
 	createdUser := database.DB.Create(&user_)
 	err = createdUser.Error
 
+	/*if there is an error abort*/
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	profile_ := &models.Profile{
+		UserID:     int(user_.ID),
+		First_name: user_.First_name,
+		Last_name:  user_.Last_name,
+		User_type:  user_.User_type,
+		User_name:  user_.User_name,
+		Pro_type:   "",
+	}
+
+	/*create user profile*/
+	createProfile := database.DB.Create(&profile_)
+	err = createProfile.Error
+
+	/*if there is an error abort*/
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
 	}
 
-	json.NewEncoder(w).Encode(createdUser)
+	_, err := helper.RegisterEmailAccount(user)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	/*if successful return user profile*/
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(createProfile.Value)
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +131,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var dbUser models.User
 	_ = json.NewDecoder(r.Body).Decode(&user)
 
-	//find a user with username and see if that user even exists
+	/*find a user with username and see if that user even exists*/
 	database.DB.Where("user_name = ?", user.User_name).First(&dbUser)
 
 	if dbUser.ID == 0 {
@@ -106,14 +150,16 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	accessTokenExpiration := time.Duration(60) * time.Minute
 	refreshTokenExpiration := time.Duration(30*24) * time.Hour
 
-	accessToken, accessTokenExpiresAt, err := helper.GenerateToken(dbUser.User_name, accessTokenExpiration)
+	accessToken, accessTokenExpiresAt, err := helper.GenerateToken(dbUser, accessTokenExpiration)
 	if err != nil {
-		json.NewEncoder(w).Encode(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
 	}
 
-	refreshToken, _, err := helper.GenerateToken(dbUser.User_name, refreshTokenExpiration)
+	refreshToken, _, err := helper.GenerateToken(dbUser, refreshTokenExpiration)
 	if err != nil {
-		json.NewEncoder(w).Encode(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
 	}
 
 	signings := &models.Signings{
@@ -122,88 +168,78 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		AccessTokenExpiration: time.Unix(accessTokenExpiresAt, 0).Format(time.RFC3339),
 	}
 
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(signings)
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+	user_id, _ := strconv.Atoi(params["id"])
 
-	var user models.User
+	var profile models.Profile
 	var restaurant []models.Restaurant
 
-	database.DB.First(&user, id)
-	database.DB.Model(&user).Related(&restaurant)
-
-	user.Restaurant = restaurant
-
-	if user.ID == 0 {
+	database.DB.Where("user_id = ?", user_id).First(&profile)
+	if profile.ID == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("User does not exist")
 		return
 	}
+	database.DB.Model(&profile).Related(&restaurant)
 
-	userData := map[string]interface{}{
-		"id":           user.ID,
-		"first_name":   user.First_name,
-		"last_name":    user.Last_name,
-		"user_name":    user.User_name,
-		"email":        user.Email,
-		"avatar":       user.Avatar,
-		"phone":        user.Phone,
-		"account_type": user.Account_type,
-		"restaurant":   user.Restaurant,
-	}
+	profile.Restaurant = restaurant
 
-	json.NewEncoder(w).Encode(userData)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(profile)
+
 }
 
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+// func UpdateUser(w http.ResponseWriter, r *http.Request) {
+// 	params := mux.Vars(r)
+// 	id, _ := strconv.Atoi(params["id"])
 
-	var user models.User
-	var dbUser models.User
-	var restaurant []models.Restaurant
+// 	var user models.User
+// 	var dbUser models.User
+// 	var restaurant []models.Restaurant
 
-	database.DB.First(&dbUser, id)
-	database.DB.Model(&dbUser).Related(&restaurant)
+// 	database.DB.First(&dbUser, id)
+// 	database.DB.Model(&dbUser).Related(&restaurant)
 
-	dbUser.Restaurant = restaurant
+// 	dbUser.Restaurant = restaurant
 
-	if dbUser.ID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("User does not exist")
-		return
-	}
+// 	if dbUser.ID == 0 {
+// 		w.WriteHeader(http.StatusBadRequest)
+// 		json.NewEncoder(w).Encode("User does not exist")
+// 		return
+// 	}
 
-	_ = json.NewDecoder(r.Body).Decode(&user)
+// 	_ = json.NewDecoder(r.Body).Decode(&user)
 
-	file, _, _ := r.FormFile("avatar")
-	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(w, r, "avatar")
-		if err != nil {
-			dbUser.Avatar = user.Avatar
-		}
-		dbUser.Avatar = avatarUrl
-	}
+// 	file, _, _ := r.FormFile("avatar")
+// 	if file != nil {
+// 		avatarUrl, err := helper.SingleImageUpload(w, r, "avatar")
+// 		if err != nil {
+// 			dbUser.Avatar = user.Avatar
+// 		}
+// 		dbUser.Avatar = avatarUrl
+// 	}
 
-	dbUser.First_name = user.First_name
-	dbUser.Last_name = user.Last_name
+// 	dbUser.First_name = user.First_name
+// 	dbUser.Last_name = user.Last_name
 
-	database.DB.Save(&dbUser)
+// 	database.DB.Save(&dbUser)
 
-	userData := map[string]interface{}{
-		"id":           dbUser.ID,
-		"first_name":   dbUser.First_name,
-		"last_name":    dbUser.Last_name,
-		"user_name":    dbUser.User_name,
-		"email":        dbUser.Email,
-		"avatar":       dbUser.Avatar,
-		"phone":        dbUser.Phone,
-		"account_type": dbUser.Account_type,
-		"restaurant":   dbUser.Restaurant,
-	}
+// 	userData := map[string]interface{}{
+// 		"id":           dbUser.ID,
+// 		"first_name":   dbUser.First_name,
+// 		"last_name":    dbUser.Last_name,
+// 		"user_name":    dbUser.User_name,
+// 		"email":        dbUser.Email,
+// 		"avatar":       dbUser.Avatar,
+// 		"phone":        dbUser.Phone,
+// 		"account_type": dbUser.Account_type,
+// 		"restaurant":   dbUser.Restaurant,
+// 	}
 
-	json.NewEncoder(w).Encode(userData)
-}
+// 	json.NewEncoder(w).Encode(userData)
+// }

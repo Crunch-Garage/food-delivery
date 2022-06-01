@@ -26,7 +26,7 @@ func IsAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handle
 			func(token *jwt.Token) (interface{}, error) {
 				return jwtkey, nil
 			})
-
+		//	json.NewEncoder(w).Encode(token.Claims)
 		if err != nil {
 			if err == jwt.ErrSignatureInvalid {
 				w.WriteHeader(http.StatusUnauthorized)

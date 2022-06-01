@@ -10,6 +10,6 @@ type Restaurant struct {
 	Phone_number        string `json:"phone_number"`
 	Address             string `json:"address"`
 	Location            string `json:"location"` // geo coordnates, change this interface
-	UserID              int    `json:"owner"`
+	ProfileID           int    `json:"owner"`
 	Registration_status string `json:"registration_status" validate:"eq=PENDING|eq=ACCEPTED|eq=REJECTED"`
 }

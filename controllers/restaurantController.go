@@ -49,14 +49,14 @@ func GetRestaurants(w http.ResponseWriter, r *http.Request) {
 
 		/*user interface*/
 		userData := map[string]interface{}{
-			"id":           user.ID,
-			"first_name":   user.First_name,
-			"last_name":    user.Last_name,
-			"user_name":    user.User_name,
-			"email":        user.Email,
-			"avatar":       user.Avatar,
-			"phone":        user.Phone,
-			"account_type": user.Account_type,
+			"id": user.ID,
+			// "first_name":   user.First_name,
+			// "last_name":    user.Last_name,
+			// "user_name":    user.User_name,
+			// "email":        user.Email,
+			// "avatar":       user.Avatar,
+			// "phone":        user.Phone,
+			// "account_type": user.Account_type,
 		}
 
 		/*restaurant interface*/
@@ -95,14 +95,14 @@ func GetRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	/*user interface*/
 	userData := map[string]interface{}{
-		"id":           user.ID,
-		"first_name":   user.First_name,
-		"last_name":    user.Last_name,
-		"user_name":    user.User_name,
-		"email":        user.Email,
-		"avatar":       user.Avatar,
-		"phone":        user.Phone,
-		"account_type": user.Account_type,
+		"id": user.ID,
+		// "first_name":   user.First_name,
+		// "last_name":    user.Last_name,
+		// "user_name":    user.User_name,
+		// "email":        user.Email,
+		// "avatar":       user.Avatar,
+		// "phone":        user.Phone,
+		// "account_type": user.Account_type,
 	}
 
 	restaurantData := map[string]interface{}{
