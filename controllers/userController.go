@@ -44,19 +44,6 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	_ = json.NewDecoder(r.Body).Decode(&user)
 
-	_, err := helper.RegisterEmailAccount(user)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-}
-
-func SignUp2(w http.ResponseWriter, r *http.Request) {
-	var user models.User
-
-	_ = json.NewDecoder(r.Body).Decode(&user)
-
 	/*check if email exists*/
 	var dbUser models.User
 	database.DB.Where("email = ?", user.Email).First(&dbUser)
