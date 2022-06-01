@@ -134,7 +134,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	accessTokenExpiration := time.Duration(60) * time.Minute
 	refreshTokenExpiration := time.Duration(30*24) * time.Hour
-
+	//user controler
 	accessToken, accessTokenExpiresAt, err := helper.GenerateToken(dbUser, accessTokenExpiration)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
