@@ -4,7 +4,7 @@
 </h1>
 <p align="center">Create a new production-ready food delivery project just as Uber Eats and Glovo  with <b>backend</b> (Golang) and <b>database</b> (PostgreSQL) in a few minutes.</p>
 
-<p align="center"><a href="https://pkg.go.dev/github.com/create-go-app/cli/v3?tab=doc" 
+<p align="center"><a href="https://github.com/CossyCossy/food-delivery" 
 target="_blank"><img src="https://img.shields.io/badge/Go-1.18+-00ADD8?style=for-the-badge&logo=go" alt="go version" /></a>&nbsp;</p>
 
 <br />
