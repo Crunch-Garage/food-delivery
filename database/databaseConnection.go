@@ -1,10 +1,10 @@
 package database
 
 import (
+	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/models"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/jinzhu/gorm"
 )
@@ -17,11 +17,11 @@ func OpenDB() *gorm.DB {
 	/*
 		loading environmental variables
 	*/
-	dialect := os.Getenv("DIALECT")
-	host := os.Getenv("HOST")
-	dbport := os.Getenv("DBPORT")
-	user := os.Getenv("USER")
-	dbName := os.Getenv("NAME")
+	dialect := config.EnvDBDialect()
+	host := config.EnvDBHost()
+	dbport := config.EnvDBPort()
+	user := config.EnvDBUser()
+	dbName := config.EnvDBName()
 	password := "zoom20$$" //os.Getenv("PASSWD")
 
 	/*
@@ -57,5 +57,7 @@ func AutoMigrate() {
 		&models.Food{},
 		&models.Order{},
 		&models.OrderItem{},
-		&models.Invoice{})
+		&models.Invoice{},
+		&models.Location{},
+	)
 }

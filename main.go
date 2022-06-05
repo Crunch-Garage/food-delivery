@@ -35,6 +35,7 @@ func handleRequests() {
 	routes.OrderRouter(router)
 	routes.OrderItemRouter(router)
 	routes.InvoiceRouter(router)
+	routes.LocationRouter(router)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

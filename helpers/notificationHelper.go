@@ -2,16 +2,14 @@ package helper
 
 import (
 	"bytes"
+	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/models"
 	"crypto/tls"
 	"html/template"
-	"os"
 
 	gomail "gopkg.in/gomail.v2"
 )
 
-var smtp_email = os.Getenv("SMTP_EMAIL")
-var smtp_password = os.Getenv("SMTP_EMAIL_PASSWORD")
 var err error
 
 func RegisterEmailAccount(user models.User) (string, error) {
@@ -54,7 +52,7 @@ func HandleSendEmail(to, subject, body string) (string, error) {
 	m := gomail.NewMessage()
 
 	/*set email sender*/
-	m.SetHeader("From", smtp_email)
+	m.SetHeader("From", config.SmtpEmail())
 
 	/*set email receiver*/
 	m.SetHeader("To", to)
@@ -66,7 +64,7 @@ func HandleSendEmail(to, subject, body string) (string, error) {
 	m.SetBody("text/html", body)
 
 	/*settings for SMTP server*/
-	d := gomail.NewDialer("smtp.gmail.com", 587, smtp_email, smtp_password)
+	d := gomail.NewDialer("smtp.gmail.com", 587, config.SmtpEmail(), config.SmtpEmailPassword())
 
 	/*this is only needed when SSL/TLS certificateis not valid on server*/
 	/*In production this should be set to false*/

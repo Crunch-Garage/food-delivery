@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/database"
 	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
@@ -74,7 +75,7 @@ func UpdateFood(w http.ResponseWriter, r *http.Request) {
 
 	file, _, _ := r.FormFile("food_image")
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(w, r, "food_image")
+		avatarUrl, err := helper.SingleImageUpload(w, r, "food_image", config.EnvCloudMenuFolder())
 		if err != nil {
 			dbFood.Food_image = food.Food_image
 		}

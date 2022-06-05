@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/database"
 	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
@@ -11,6 +12,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var menu_image = ""
+
 func CreateMenu(w http.ResponseWriter, r *http.Request) {
 	var menu models.Menu
 
@@ -20,10 +23,12 @@ func CreateMenu(w http.ResponseWriter, r *http.Request) {
 	err = createdMenu.Error
 
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
 		return
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(createdMenu.Value)
 }
 
@@ -31,8 +36,16 @@ func GetMenus(w http.ResponseWriter, r *http.Request) {
 
 	var menus []models.Menu
 
-	database.DB.Find(&menus)
+	menuList := database.DB.Find(&menus)
+	err = menuList.Error
 
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(menus)
 }
 
@@ -50,6 +63,7 @@ func GetMenu(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(menu)
 }
 
@@ -69,21 +83,33 @@ func UpdateMenu(w http.ResponseWriter, r *http.Request) {
 
 	_ = json.NewDecoder(r.Body).Decode(&menu)
 
-	file, _, _ := r.FormFile("menu_image")
-	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(w, r, "menu_image")
-		if err != nil {
-			dbMenu.Menu_image = menu.Menu_image
-		}
-		dbMenu.Menu_image = avatarUrl
+	if menu.Name != "" {
 		dbMenu.Name = menu.Name
-
 	}
 
-	dbMenu.Name = menu.Name
+	file, _, _ := r.FormFile("menu_image")
+	if file != nil {
+		avatarUrl, err := helper.SingleImageUpload(w, r, "menu_image", config.EnvCloudMenuFolder())
+		if err != nil {
+			menu_image = dbMenu.Menu_image
+		}
+		menu_image = avatarUrl
+	}
 
-	database.DB.Save(&dbMenu)
+	/*update menu*/
+	updatedMenu := database.DB.Model(&menu).Updates(models.Menu{
+		Name:       dbMenu.Name,
+		Menu_image: menu_image,
+	})
+	err := updatedMenu.Error
 
-	json.NewEncoder(w).Encode(dbMenu)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updatedMenu.Value)
 
 }

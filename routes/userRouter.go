@@ -11,5 +11,5 @@ func UserRouter(router *mux.Router) {
 	router.HandleFunc("/api/user/signup", controller.SignUp).Methods("POST")
 	router.HandleFunc("/api/user/login", controller.Login).Methods("POST")
 	router.Handle("/api/user/{id}", middleware.IsAuthorized(controller.GetUser)).Methods("GET")
-	//router.Handle("/api/user/{id}", middleware.IsAuthorized(controller.UpdateUser)).Methods("PATCH")
+	router.Handle("/api/user/{id}", middleware.IsAuthorized(controller.UpdateUser)).Methods("PATCH")
 }

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/database"
 	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
@@ -17,6 +18,8 @@ import (
 )
 
 var err error
+
+var profile_image = ""
 
 func HashPassword(password string) string {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -106,7 +109,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	/*if successful return user profile*/
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user_.Profile)
+	json.NewEncoder(w).Encode(user_.Profile[0])
 }
 
 /*login*/
@@ -179,52 +182,66 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(profile)
 }
 
-// func UpdateUser(w http.ResponseWriter, r *http.Request) {
-// 	params := mux.Vars(r)
-// 	id, _ := strconv.Atoi(params["id"])
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, _ := strconv.Atoi(params["id"])
 
-// 	var user models.User
-// 	var dbUser models.User
-// 	var restaurant []models.Restaurant
+	var user models.User
+	var profile models.Profile
+	var restaurant []models.Restaurant
+	var dbUser models.User
 
-// 	database.DB.First(&dbUser, id)
-// 	database.DB.Model(&dbUser).Related(&restaurant)
+	_ = json.NewDecoder(r.Body).Decode(&user)
 
-// 	dbUser.Restaurant = restaurant
+	database.DB.First(&dbUser, id)
+	database.DB.Where("user_id = ?", id).First(&profile)
+	database.DB.Model(&profile).Related(&restaurant)
 
-// 	if dbUser.ID == 0 {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		json.NewEncoder(w).Encode("User does not exist")
-// 		return
-// 	}
+	if dbUser.ID == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("User does not exist")
+		return
+	}
 
-// 	_ = json.NewDecoder(r.Body).Decode(&user)
+	//check for media
 
-// 	file, _, _ := r.FormFile("avatar")
-// 	if file != nil {
-// 		avatarUrl, err := helper.SingleImageUpload(w, r, "avatar")
-// 		if err != nil {
-// 			dbUser.Avatar = user.Avatar
-// 		}
-// 		dbUser.Avatar = avatarUrl
-// 	}
+	file, _, _ := r.FormFile("profile_image")
 
-// 	dbUser.First_name = user.First_name
-// 	dbUser.Last_name = user.Last_name
+	if file != nil {
+		avatarUrl, err := helper.SingleImageUpload(w, r, "profile_image", config.EnvCloudMenuFolder())
+		if err != nil {
+			profile_image = dbUser.Profile_image
+		}
+		profile_image = avatarUrl
+	}
 
-// 	database.DB.Save(&dbUser)
+	dbUser.First_name = user.First_name
+	dbUser.Last_name = user.Last_name
+	dbUser.User_name = user.User_name
+	dbUser.Profile_image = profile_image
 
-// 	userData := map[string]interface{}{
-// 		"id":           dbUser.ID,
-// 		"first_name":   dbUser.First_name,
-// 		"last_name":    dbUser.Last_name,
-// 		"user_name":    dbUser.User_name,
-// 		"email":        dbUser.Email,
-// 		"avatar":       dbUser.Avatar,
-// 		"phone":        dbUser.Phone,
-// 		"account_type": dbUser.Account_type,
-// 		"restaurant":   dbUser.Restaurant,
-// 	}
+	/*update user*/
+	updatedUser := database.DB.Save(&dbUser)
+	err := updatedUser.Error
 
-// 	json.NewEncoder(w).Encode(userData)
-// }
+	/*update profile*/
+	database.DB.Model(&profile).Updates(models.Profile{
+		First_name:    dbUser.First_name,
+		Last_name:     dbUser.Last_name,
+		User_name:     dbUser.User_name,
+		Profile_image: profile_image,
+	})
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	profile.Restaurant = restaurant
+	dbUser.Profile = []models.Profile{profile}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(dbUser.Profile)
+
+}

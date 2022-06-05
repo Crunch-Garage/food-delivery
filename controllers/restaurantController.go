@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"crunchgarage/restaurant-food-delivery/config"
 	"crunchgarage/restaurant-food-delivery/database"
 	helper "crunchgarage/restaurant-food-delivery/helpers"
 	"crunchgarage/restaurant-food-delivery/models"
@@ -10,6 +11,8 @@ import (
 
 	"github.com/gorilla/mux"
 )
+
+var restaurant_image = ""
 
 func CreateRestaurant(w http.ResponseWriter, r *http.Request) {
 	var restaurant models.Restaurant
@@ -24,6 +27,7 @@ func CreateRestaurant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	restaurant.Registration_status = "PENDING"
 	createdMenu := database.DB.Create(&restaurant)
 	err = createdMenu.Error
 
@@ -32,6 +36,7 @@ func CreateRestaurant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(createdMenu.Value)
 }
 
@@ -43,21 +48,9 @@ func GetRestaurants(w http.ResponseWriter, r *http.Request) {
 
 	for i, _ := range restaurants {
 
-		var user models.User
+		var profile models.Profile
 
-		database.DB.Model(&restaurants[i]).Related(&user)
-
-		/*user interface*/
-		userData := map[string]interface{}{
-			"id": user.ID,
-			// "first_name":   user.First_name,
-			// "last_name":    user.Last_name,
-			// "user_name":    user.User_name,
-			// "email":        user.Email,
-			// "avatar":       user.Avatar,
-			// "phone":        user.Phone,
-			// "account_type": user.Account_type,
-		}
+		database.DB.Model(&restaurants[i]).Related(&profile)
 
 		/*restaurant interface*/
 		restaurantData := map[string]interface{}{
@@ -66,14 +59,15 @@ func GetRestaurants(w http.ResponseWriter, r *http.Request) {
 			"restaurant_name":  restaurants[i].Restaurant_name,
 			"phone_number":     restaurants[i].Phone_number,
 			"address":          restaurants[i].Address,
-			"location":         restaurants[i].Location,
-			"owner":            userData,
+			"location":         restaurants[i].LocationID,
+			"owner":            profile,
 		}
 
 		restaurantsHolder = append(restaurantsHolder, restaurantData)
 
 	}
 
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(restaurantsHolder)
 }
 
@@ -82,27 +76,17 @@ func GetRestaurant(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(params["id"])
 
 	var restaurant models.Restaurant
-	var user models.User
+	var profile models.Profile
+	var location models.Location
 
 	database.DB.First(&restaurant, id)
-	database.DB.Model(&restaurant).Related(&user)
+	database.DB.Model(&restaurant).Related(&profile)
+	database.DB.Model(&restaurant).Related(&location)
 
 	if restaurant.ID == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("Restaurant not found")
 		return
-	}
-
-	/*user interface*/
-	userData := map[string]interface{}{
-		"id": user.ID,
-		// "first_name":   user.First_name,
-		// "last_name":    user.Last_name,
-		// "user_name":    user.User_name,
-		// "email":        user.Email,
-		// "avatar":       user.Avatar,
-		// "phone":        user.Phone,
-		// "account_type": user.Account_type,
 	}
 
 	restaurantData := map[string]interface{}{
@@ -113,11 +97,11 @@ func GetRestaurant(w http.ResponseWriter, r *http.Request) {
 		"restaurant_name":  restaurant.Restaurant_name,
 		"phone_number":     restaurant.Phone_number,
 		"address":          restaurant.Address,
-		"location":         restaurant.Location,
-		"owner":            userData,
+		"location":         location,
+		"owner":            restaurant.ProfileID,
 	}
 
-	/*restaurant interface*/
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(restaurantData)
 }
 
@@ -127,7 +111,12 @@ func UpdateRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	var restaurant models.Restaurant
 	var dbRestaurant models.Restaurant
+	var profile models.Profile
+	var location models.Location
+
 	database.DB.First(&dbRestaurant, id)
+	database.DB.Model(&dbRestaurant).Related(&profile)
+	database.DB.Model(&dbRestaurant).Related(&location)
 
 	if dbRestaurant.ID == 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -139,21 +128,31 @@ func UpdateRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	file, _, _ := r.FormFile("restaurant_image")
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(w, r, "restaurant_image")
+		avatarUrl, err := helper.SingleImageUpload(w, r, "restaurant_image", config.EnvCloudMenuFolder())
 		if err != nil {
-			dbRestaurant.Restaurant_image = restaurant.Restaurant_image
+			restaurant_image = dbRestaurant.Restaurant_image
 		}
-		dbRestaurant.Restaurant_image = avatarUrl
-		dbRestaurant.Restaurant_name = restaurant.Restaurant_name
-
+		restaurant_image = avatarUrl
 	}
 
-	dbRestaurant.Restaurant_name = restaurant.Restaurant_name
-	dbRestaurant.Address = restaurant.Address
-	dbRestaurant.Location = restaurant.Location
-	dbRestaurant.Phone_number = restaurant.Phone_number
+	database.DB.Model(&dbRestaurant).Updates(models.Restaurant{
+		Restaurant_name:  restaurant.Restaurant_name,
+		Address:          restaurant.Address,
+		LocationID:       restaurant.LocationID,
+		Phone_number:     restaurant.Phone_number,
+		Restaurant_image: restaurant_image,
+	})
 
-	database.DB.Save(&dbRestaurant)
+	restaurantData := map[string]interface{}{
+		"id":               dbRestaurant.ID,
+		"restaurant_image": dbRestaurant.Restaurant_image,
+		"restaurant_name":  dbRestaurant.Restaurant_name,
+		"phone_number":     dbRestaurant.Phone_number,
+		"address":          dbRestaurant.Address,
+		"owner":            dbRestaurant.ProfileID,
+		"location":         location,
+	}
 
-	json.NewEncoder(w).Encode(dbRestaurant)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(restaurantData)
 }
