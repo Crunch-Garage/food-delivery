@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img alt="cgapp logo" src="https://raw.githubusercontent.com/create-go-app/cli/master/.github/images/cgapp_logo%402x.png" width="224px"/><br/>
+  <img alt="cgapp logo" src="https://raw.githubusercontent.com/CossyCossy/food-delivery/master/html/img/cgapp_logo%402x.png" width="224px"/><br/>
   Food Delivery Backend
 </h1>
 <p align="center">Create a new production-ready food delivery project just as Uber Eats and Glovo  with <b>backend</b> (Golang) and <b>database</b> (PostgreSQL) in a few minutes.</p>
