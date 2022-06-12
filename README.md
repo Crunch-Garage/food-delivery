@@ -7,7 +7,7 @@
 <p align="center"><a href="https://github.com/CossyCossy/food-delivery" 
 target="_blank"><img src="https://img.shields.io/badge/Go-1.18+-00ADD8?style=for-the-badge&logo=go" alt="go version" /></a>&nbsp;
 <a href="https://github.com/CossyCossy/food-delivery" 
-target="_blank"><img src="https://img.shields.io/badge/PostgreSQL-10.21+-red?style=for-the-badge&logo=postgresql" alt="PostgreSQL version" />
+target="_blank"><img src="https://img.shields.io/badge/PostgreSQL-10.21+-red?style=for-the-badge&logo=postgresql&logoColor=green" alt="PostgreSQL version" />
  </p>
 
 <br />
