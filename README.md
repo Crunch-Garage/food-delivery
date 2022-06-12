@@ -71,10 +71,10 @@ _**PS:** consider sharing and following our organization ([Crunch Garage](https:
 The Food Delivery backend is free and open-source software licensed under the GNU General Public License v3.0. All designs were created by [Crunch Garage](https://github.com/CossyCossy/food-delivery) and distributed under [MIT](./LICENSE).
 
 
-# Author
+# 🥷 Author
 
 Cosmas Mbuvi | [Crunch Garage Homepage](https://crunchgarage.com)
 
-# 💛
+# 🍾 Cheers!
 
 Reminder that *you are great, you are enough, and your presence is valued.* If you are struggling with your mental health, please reach out to someone you love and consult a professional. [There are many resources for you to get help in a time of need.](https://www.nimh.nih.gov/health/find-help)
