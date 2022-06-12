@@ -5,7 +5,7 @@ import "github.com/jinzhu/gorm"
 type Order struct {
 	gorm.Model
 
-	UserID           int         `json:"customer_id"`
+	ProfileID        int         `json:"customer_id"`
 	OrderItem        []OrderItem `json:"order_items"`
 	Delivery_address string      `json:"delivery_address"`
 	Order_status     string      `json:"order_status" validate:"eq=PENDING|eq=CANCELLED|eq=DELIVERED"`

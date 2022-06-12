@@ -126,9 +126,25 @@ func UpdateRestaurant(w http.ResponseWriter, r *http.Request) {
 
 	_ = json.NewDecoder(r.Body).Decode(&restaurant)
 
+	if restaurant.Restaurant_name != "" {
+		dbRestaurant.Restaurant_name = restaurant.Restaurant_name
+	}
+
+	if restaurant.Phone_number != "" {
+		dbRestaurant.Phone_number = restaurant.Phone_number
+	}
+
+	if restaurant.Address != "" {
+		dbRestaurant.Address = restaurant.Address
+	}
+
+	if strconv.Itoa(restaurant.LocationID) != "" {
+		dbRestaurant.LocationID = restaurant.LocationID
+	}
+
 	file, _, _ := r.FormFile("restaurant_image")
 	if file != nil {
-		avatarUrl, err := helper.SingleImageUpload(w, r, "restaurant_image", config.EnvCloudMenuFolder())
+		avatarUrl, err := helper.SingleImageUpload(w, r, "restaurant_image", config.EnvCloudRestaurantFolder())
 		if err != nil {
 			restaurant_image = dbRestaurant.Restaurant_image
 		}
@@ -153,6 +169,7 @@ func UpdateRestaurant(w http.ResponseWriter, r *http.Request) {
 		"location":         location,
 	}
 
+	restaurant_image = ""
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(restaurantData)
 }

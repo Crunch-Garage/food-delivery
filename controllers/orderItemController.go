@@ -90,7 +90,7 @@ func GetRestaurantOrderItems(w http.ResponseWriter, r *http.Request) {
 			"order_date":       order.Order_Date,
 			"delivery_address": order.Delivery_address,
 			"status":           order.Order_status,
-			"customer_id":      order.UserID,
+			"customer_id":      order.ProfileID,
 		}
 
 		/**invoice interface*/

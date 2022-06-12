@@ -17,7 +17,26 @@ var menu_image = ""
 func CreateMenu(w http.ResponseWriter, r *http.Request) {
 	var menu models.Menu
 
-	_ = json.NewDecoder(r.Body).Decode(&menu)
+	/*get formdata*/
+	menu_name := r.PostFormValue("name")
+	file, _, _ := r.FormFile("menu_image")
+
+	if menu_name == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Menu name is required")
+		return
+	}
+
+	if file != nil {
+		avatarUrl, err := helper.SingleImageUpload(w, r, "menu_image", config.EnvCloudMenuFolder())
+		if err != nil {
+			menu_image = ""
+		}
+		menu_image = avatarUrl
+	}
+
+	menu.Name = menu_name
+	menu.Menu_image = menu_image
 
 	createdMenu := database.DB.Create(&menu)
 	err = createdMenu.Error
@@ -30,6 +49,7 @@ func CreateMenu(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(createdMenu.Value)
+
 }
 
 func GetMenus(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +117,7 @@ func UpdateMenu(w http.ResponseWriter, r *http.Request) {
 	}
 
 	/*update menu*/
-	updatedMenu := database.DB.Model(&menu).Updates(models.Menu{
+	updatedMenu := database.DB.Model(&dbMenu).Updates(models.Menu{
 		Name:       dbMenu.Name,
 		Menu_image: menu_image,
 	})
@@ -111,5 +131,4 @@ func UpdateMenu(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(updatedMenu.Value)
-
 }

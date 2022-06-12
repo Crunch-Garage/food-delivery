@@ -15,7 +15,7 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 	var order models.Order
 	_ = json.NewDecoder(r.Body).Decode(&order)
 
-	if order.UserID == 0 {
+	if order.ProfileID == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("UserID field is required")
 		return
@@ -46,7 +46,7 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 	total_amount_sum := total_price_sum + delivery_charge_estimate
 
 	order_ := models.Order{
-		UserID:           order.UserID,
+		ProfileID:        order.ProfileID,
 		Delivery_address: order.Delivery_address,
 		Order_status:     "PENDING",
 		Order_Date:       time.Now().Format(time.RFC3339),
@@ -74,11 +74,15 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 		}
 
 		database.DB.Create(&order_item_)
-
 	}
 
+	var order_item []models.OrderItem
+
+	database.DB.Model(&order_).Related(&order_item)
+	order_.OrderItem = order_item
+
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(createdOrder.Value)
+	json.NewEncoder(w).Encode(order_)
 }
 
 func GetOrder(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +144,7 @@ func GetOrder(w http.ResponseWriter, r *http.Request) {
 		"id":               order.ID,
 		"CreatedAt":        order.CreatedAt,
 		"UpdatedAt":        order.UpdatedAt,
-		"customer_id":      order.UserID,
+		"customer_id":      order.ProfileID,
 		"order_items":      orderItemHolder,
 		"delivery_address": order.Delivery_address,
 		"order_status":     order.Order_status,
@@ -175,7 +179,7 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 
 	_ = json.NewDecoder(r.Body).Decode(&order)
 
-	if order.UserID == 0 {
+	if order.ProfileID == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode("customer id field is required")
 		return
@@ -205,7 +209,7 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	// get total amount of order items and deleivery charge
 	total_amount_sum := total_price_sum + delivery_charge_estimate
 
-	dbOrder.UserID = order.UserID
+	dbOrder.ProfileID = order.ProfileID
 	dbOrder.Delivery_address = order.Delivery_address
 	dbOrder.Order_status = order.Order_status
 	dbOrder.Order_Date = time.Now().Format(time.RFC3339)
@@ -213,8 +217,8 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	dbOrder.Delivery_charge = delivery_charge_estimate
 	dbOrder.Total_amount = total_amount_sum
 
-	updated_user := database.DB.Save(&dbOrder)
-	err := updated_user.Error
+	updated_order := database.DB.Save(&dbOrder)
+	err := updated_order.Error
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -228,47 +232,52 @@ func UpdateOrder(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	var orderItemHolder []map[string]interface{}
+	var order_item []models.OrderItem
 
-	for i, _ := range order.OrderItem {
+	database.DB.Model(&dbOrder).Related(&order_item)
+	dbOrder.OrderItem = order_item
 
-		var food models.Food
+	// var orderItemHolder []map[string]interface{}
 
-		database.DB.Model(&order.OrderItem[i]).Related(&food)
+	// for i, _ := range order.OrderItem {
 
-		foodData := map[string]interface{}{
-			"id":          food.ID,
-			"name":        food.Name,
-			"price":       food.Price,
-			"image":       food.Food_image,
-			"description": food.Description,
-			"status":      food.Status,
-		}
+	// 	var food models.Food
 
-		orderItemData := map[string]interface{}{
-			"id":          order.OrderItem[i].ID,
-			"quantity":    order.OrderItem[i].Quantity,
-			"unit_price":  order.OrderItem[i].Unit_price,
-			"food":        foodData,
-			"total_price": order.OrderItem[i].Unit_price * float64(order.OrderItem[i].Quantity),
-		}
+	// 	database.DB.Model(&order.OrderItem[i]).Related(&food)
 
-		orderItemHolder = append(orderItemHolder, orderItemData)
-	}
+	// 	foodData := map[string]interface{}{
+	// 		"id":          food.ID,
+	// 		"name":        food.Name,
+	// 		"price":       food.Price,
+	// 		"image":       food.Food_image,
+	// 		"description": food.Description,
+	// 		"status":      food.Status,
+	// 	}
 
-	orderData := map[string]interface{}{
-		"id":               dbOrder.ID,
-		"customer_id":      dbOrder.UserID,
-		"order_items":      orderItemHolder,
-		"delivery_address": dbOrder.Delivery_address,
-		"order_status":     dbOrder.Order_status,
-		"driver_id":        dbOrder.DriverID,
-		"order_date":       dbOrder.Order_Date,
-		"total_price":      dbOrder.Total_price,
-		"delivery_charge":  dbOrder.Delivery_charge,
-		"total_amount":     dbOrder.Total_amount,
-	}
+	// 	orderItemData := map[string]interface{}{
+	// 		"id":          order.OrderItem[i].ID,
+	// 		"quantity":    order.OrderItem[i].Quantity,
+	// 		"unit_price":  order.OrderItem[i].Unit_price,
+	// 		"food":        foodData,
+	// 		"total_price": order.OrderItem[i].Unit_price * float64(order.OrderItem[i].Quantity),
+	// 	}
+
+	// 	orderItemHolder = append(orderItemHolder, orderItemData)
+	// }
+
+	// orderData := map[string]interface{}{
+	// 	"id":               dbOrder.ID,
+	// 	"customer_id":      dbOrder.ProfileID,
+	// 	"order_items":      orderItemHolder,
+	// 	"delivery_address": dbOrder.Delivery_address,
+	// 	"order_status":     dbOrder.Order_status,
+	// 	"driver_id":        dbOrder.DriverID,
+	// 	"order_date":       dbOrder.Order_Date,
+	// 	"total_price":      dbOrder.Total_price,
+	// 	"delivery_charge":  dbOrder.Delivery_charge,
+	// 	"total_amount":     dbOrder.Total_amount,
+	// }
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(orderData)
+	json.NewEncoder(w).Encode(dbOrder)
 }

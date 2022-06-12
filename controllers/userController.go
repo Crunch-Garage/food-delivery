@@ -241,6 +241,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	profile.Restaurant = restaurant
 	dbUser.Profile = []models.Profile{profile}
 
+	profile_image = ""
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(dbUser.Profile)
 
