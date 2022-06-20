@@ -24,7 +24,7 @@ target="_blank"><img src="https://img.shields.io/badge/Go-1.18+-00ADD8?style=for
 <br />
 
 # 🧐 Project philosophy
-> Food Delivery application allows users to order food from a list of restaurants.
+> A Food Delivery application that allows users to order food from a list of restaurants.
 > The Food Delivery backend is built using GoLang and uses PostgreSQL as a database. 
 > 
 > The Food Delivery backend is part of a project that [Crunch Garage](https://crunchgarage.com/) is working on. This project is currently working on the backend and database.
