@@ -59,7 +59,7 @@ func CreateFood(w http.ResponseWriter, r *http.Request) {
 	if file != nil {
 		avatarUrl, err := helper.SingleImageUpload(w, r, "food_image", config.EnvCloudFoodFolder())
 		if err != nil {
-			food_image = ""
+			avatarUrl = ""
 		}
 		food_image = avatarUrl
 	}
@@ -148,7 +148,7 @@ func UpdateFood(w http.ResponseWriter, r *http.Request) {
 	if file != nil {
 		avatarUrl, err := helper.SingleImageUpload(w, r, "food_image", config.EnvCloudFoodFolder())
 		if err != nil {
-			food_image = dbFood.Food_image
+			avatarUrl = dbFood.Food_image
 		}
 		food_image = avatarUrl
 	}
