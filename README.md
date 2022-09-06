@@ -50,7 +50,7 @@ For more information on the technologies that power the Food Delivery backend, c
 
 # ✍️ Contributing
 
-Interested in contributing to the Food Deliery backend project? Thanks so much for your interest! We are always looking for improvements to the project and contributions from open-source developers are greatly appreciated.
+Interested in contributing to the Food Delivery backend project? Thanks so much for your interest! We are always looking for improvements to the project and contributions from open-source developers are greatly appreciated.
 
 If you have a contribution in mind, please check out our [Contribution Guide](https://github.com/CossyCossy/food-delivery/wiki/Contribution-Guide) for information on how to do so. Also, make sure you read our [Code of Conduct](https://github.com/CossyCossy/food-delivery/wiki/Code-of-Conduct) to foster an encouraging sense of community.
 
